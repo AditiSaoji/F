@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Receipt History</title>
+    <link rel="stylesheet" href="history.css"> <!-- Optional: Add your CSS file here -->
+</head>
+<body>
+    <div class="container">
+        <h2>Your Receipt History</h2>
+        <ul id="receiptList"></ul>
+        <button onclick="window.history.back()">Back</button> <!-- Button to go back -->
+    </div>
+
+    <script>
+        // Replace 'userId' with the actual user ID from your session or authentication
+        const userId = 'YOUR_USER_ID_HERE'; 
+
+        async function fetchReceipts() {
+            try {
+                const response = await fetch(`/receipts/${userId}`); // Ensure userId is defined correctly
+                if (!response.ok) {
+                    throw new Error('Failed to fetch receipts');
+                }
+                const receipts = await response.json();
+                displayReceipts(receipts); // Ensure this function is defined
+            } catch (error) {
+                console.error('Error fetching receipts:', error);
+                alert('Failed to load receipts. Please check the console for details.');
+            }
+        }
+        
+        function displayReceipts(receipts) {
+            const receiptList = document.getElementById('receiptList');
+            receiptList.innerHTML = ''; // Clear existing items
+        
+            receipts.forEach(receipt => {
+                const li = document.createElement('li');
+                li.textContent = `Receipt ID: ${receipt._id} - Total: INR ${receipt.total} - Date: ${new Date(receipt.createdAt).toLocaleString()}`;
+                receiptList.appendChild(li);
+            });
+        }
+        
+        // Fetch receipts when the page loads
+        fetchReceipts();
+        
+    </script>
+</body>
+</html>

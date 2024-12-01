@@ -1,0 +1,81 @@
+* { 
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    background-image: url("https://images.pexels.com/photos/1435895/pexels-photo-1435895.jpeg");
+    background-size: cover; /* Ensure the background covers the entire viewport */
+    background-position: center; /* Center the background image */
+    background-repeat: no-repeat; /* Prevent the background from repeating */
+    font-family: 'Arial', sans-serif;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.container {
+    text-align: center;
+    background: rgba(255, 255, 255, 0.9); /* Semi-transparent white for better visibility */
+    border: 1px solid #ddd; /* Optional: Add a border to define the container */
+    padding: 40px;
+    width: 750px; /* Set a fixed width for the rectangular shape */
+    height: 500px; /* Set a fixed height for the rectangular shape */
+    margin: 0 auto; /* Center the container horizontally */
+    border-radius: 8px;
+    box-shadow: 0 0 10px rgba(0, 0, 0, 0.10);
+}
+
+h1 {
+    margin-bottom: 10px;
+    color: #333;
+}
+
+p {
+    color: #666;
+}
+
+.login-options {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 30px;
+}
+
+.login-option {
+    background: #f9f9f9;
+    border: 1px solid #ddd;
+    border-radius: 10px;
+    padding: 20px;
+    text-align: center;
+    transition: 0.3s;
+    width: 45%;
+}
+
+.login-option:hover {
+    background-color: #e2f0ff;
+    border-color: #007bff;
+    transform: scale(1.02);
+}
+
+.login-option i {
+    color: #007bff;
+    margin-bottom: 15px;
+}
+
+/* Align buttons in the same line */
+.login-options a {
+    display: inline-block;
+    margin-top: 10px;
+    background-color: #007bff;
+    color: white;
+    padding: 10px 20px;
+    border-radius: 5px;
+    text-decoration: none;
+    transition: 0.3s;
+}
+
+.login-options a:hover {
+    background-color: #0056b3;
+}

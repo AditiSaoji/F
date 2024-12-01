@@ -1,0 +1,59 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Food Item</title>
+    <link rel="stylesheet" href="add-food.css">
+</head>
+<body class="add-food-bg">
+    <div class="container">
+        <h2>Add Food Item</h2>
+        <form id="foodForm">
+            <label for="itemName">Item Name</label>
+            <input type="text" id="itemName" name="name" required>
+
+            <label for="itemImage">Item Image URL</label>
+            <input type="text" id="itemImage" name="image" required>
+
+            <label for="itemPrice">Item Price</label>
+            <input type="number" id="itemPrice" name="price" required>
+
+            <label for="itemCategory">Category</label>
+            <select id="itemCategory" name="category" required>
+                <option value="Veg">Veg</option>
+                <option value="NonVeg">Non Veg</option>
+                <option value="Snacks">Snacks</option>
+                <option value="Fruits">Fruits</option>
+                <option value="Beverages">Beverages</option>
+            </select>
+
+            <button type="submit">Add Item</button><br>
+            <center><a href="admin-home.html"><b>Back to home</b></a></center>
+        </form>
+    </div>
+
+    <script>
+        document.getElementById('foodForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const name = document.getElementById('itemName').value;
+            const image = document.getElementById('itemImage').value;
+            const price = document.getElementById('itemPrice').value;
+            const category = document.getElementById('itemCategory').value;
+
+            const res = await fetch('/add-food', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ name, image, price, category })
+            });
+
+            if (res.ok) {
+                alert('Food item added successfully');
+                window.location.href = '/admin-home.html';
+            } else {
+                alert('Failed to add food item');
+            }
+        });
+    </script>
+</body>
+</html>

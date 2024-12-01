@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Home</title>
+    <link rel="stylesheet" href="admin-home.css">
+    <style>
+        body {
+            background: linear-gradient(45deg, #ff6b6b, #e3de62, #eb8383, #eafd45);
+            background-size: 400% 400%;
+            animation: gradientBG 15s ease infinite;
+            margin: 0; /* Remove default margin */
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+
+        @keyframes gradientBG {
+            0% { background-position: 0% 50%; }
+            50% { background-position: 100% 50%; }
+            100% { background-position: 0% 50%; }
+        }
+
+        ul {
+            list-style-type: none; /* Remove bullet points */
+            padding: 0; /* Remove default padding */
+        }
+
+        li {
+            display: flex; /* Use flex for alignment */
+            align-items: center; /* Align items in the center */
+            margin-bottom: 15px; /* Space between items */
+            padding: 10px; /* Add padding around each item */
+            border: 1px solid #ccc; /* Optional: Add border for better visibility */
+            border-radius: 5px; /* Optional: Add rounded corners */
+            background-color: #f9f9f9; /* Optional: Add background color */
+            position: relative; /* To position the delete button */
+        }
+
+        img {
+            width: 50px; /* Set image width */
+            height: 50px; /* Set image height */
+            margin-right: 10px; /* Space between image and text */
+        }
+
+        button {
+            padding: 10px;
+            background-color: #ff6b6b;
+            color: white;
+            border: none;
+            cursor: pointer;
+            border-radius: 4px;
+            margin-bottom: 20px; /* Space below buttons */
+            position: relative;
+        }
+
+        button:hover {
+            background-color: #45a049;
+        }
+
+        h2, h3 {
+            text-align: center;
+        }
+
+        .delete-icon {
+            color: red;
+            font-weight: bold;
+            cursor: pointer;
+            position: absolute;
+            right: 10px;
+            top: 50%;
+            transform: translateY(-50%);
+            font-size: 18px;
+        }
+
+        .delete-icon:hover {
+            color: darkred;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h2>Admin Home</h2>
+        <button onclick="window.location.href='add-food.html'">Add Food Item</button>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;
+        <button onclick="window.location.href='logout.html'">Logout</button>
+
+        <h3>Food Items</h3>
+        
+        <!-- Filter Dropdown -->
+        <label for="categoryFilter">Filter by Category:</label>
+        <select id="categoryFilter">
+            <option value="All">All</option>
+            <option value="Veg">Veg</option>
+            <option value="NonVeg">Non Veg</option>
+            <option value="Snacks">Snacks</option>
+            <option value="Fruits">Fruits</option>
+            <option value="Beverages">Beverages</option>
+        </select>
+
+        <ul id="foodList"></ul>
+    </div>
+
+    <script>
+        async function fetchFoodItems() {
+            const res = await fetch('/food-items');
+            const foodItems = await res.json();
+            displayFoodItems(foodItems);
+        }
+
+        function displayFoodItems(foodItems) {
+            const foodList = document.getElementById('foodList');
+            foodList.innerHTML = ''; // Clear existing items
+        
+            const selectedCategory = document.getElementById('categoryFilter').value;
+        
+            const filteredItems = selectedCategory === 'All' ? foodItems : foodItems.filter(item => item.category === selectedCategory);
+        
+            filteredItems.forEach(item => {
+                const li = document.createElement('li');
+        
+                // Create image element
+                const img = document.createElement('img');
+                img.src = item.image; // Set the image source
+                img.alt = item.name; // Set alt text
+        
+                // Create text element
+                const text = document.createElement('span');
+                text.textContent = `${item.name} - ${item.category} - INR ${item.price}`;
+        
+                // Create delete icon
+                const deleteIcon = document.createElement('span');
+                deleteIcon.className = 'delete-icon';
+                deleteIcon.innerHTML = '&times;';  // 'X' symbol
+                deleteIcon.onclick = function () {
+                    deleteItem(item._id);  // Call delete function with the item's ID
+                };
+        
+                // Append image, text, and delete icon to list item
+                li.appendChild(img);
+                li.appendChild(text);
+                li.appendChild(deleteIcon);  // Append the delete icon to the list item
+                foodList.appendChild(li);
+            });
+        }
+        
+
+        async function deleteItem(itemId) {
+            console.log(`Attempting to delete item with ID: ${itemId}`);  // Log the item ID
+        
+            if (confirm('Are you sure you want to delete this item?')) {
+                try {
+                    const res = await fetch(`/delete-item/${itemId}`, {
+                        method: 'DELETE'
+                    });
+        
+                    const data = await res.json();
+        
+                    if (data.success) {
+                        alert(data.message);
+                        // Fetch the updated list of items after successful deletion
+                        fetchFoodItems();  // Refresh the list after deletion
+                    } else {
+                        alert('Failed to delete item: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error occurred while deleting the item:', error);
+                    alert('An error occurred while deleting the item');
+                }
+            }
+        }
+        
+        document.getElementById('categoryFilter').addEventListener('change', fetchFoodItems);
+
+        // Fetch food items when the page loads
+        fetchFoodItems();
+    </script>
+</body>
+</html>

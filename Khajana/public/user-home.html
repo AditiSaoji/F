@@ -1,0 +1,416 @@
+<!DOCTYPE html> 
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Home Page</title>
+    <link rel="stylesheet" href="home.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+</head>
+<body>
+    <div class="header">
+        <div class="nav-left">
+            <div class="hamburger" id="hamburger">
+                <i class="fas fa-bars"></i>   
+            </div>
+            
+            <input type="text" id="search" class="search-bar" placeholder="Search...">          
+              
+            <div class="category-dropdown">
+                <button class="dropbtn">Categories</button>
+                <div class="category-dropdown-content">
+                    <a href="#" class="filter" data-filter="All">All</a>
+                    <a href="#" class="filter" data-filter="Veg">Veg</a>
+                    <a href="#" class="filter" data-filter="NonVeg">NonVeg</a>
+                    <a href="#" class="filter" data-filter="Fruits">Fruits</a>
+                    <a href="#" class="filter" data-filter="Beverages">Beverages</a>
+                    <a href="#" class="filter" data-filter="Snacks">Snacks</a>
+                </div>
+            </div>
+        </div>
+        <div class="nav-right">
+            <a href="user-home.html"><i class="fa fa-home"></i>Home</a>
+            <a href="about.html"><i class="fas fa-info-circle"></i> About Us</a>
+            <a href="#" id="cart-link"><i class="fas fa-shopping-cart"></i> Cart</a>
+            <a href="logout.html"><i class="fas fa-sign-out-alt"></i> Logout</a>
+        </div>
+    </div>
+
+    <nav class="hamburger-menu">
+        <button onclick="window.location.href='profile.html'">Profile</button>
+        <button onclick="window.location.href='history.html'">History</button>
+        <button onclick="toggleSettings()">Settings</button>
+        <button onclick="window.location.href='logout.html'">Logout</button>
+    </nav>
+
+    <div class="settings-container" >
+        
+
+        <!-- Light Theme Switch -->
+        <label class="switch">
+            <input type="checkbox" id="themeSwitch">
+            <span class="slider"></span>
+        </label>
+        <label for="themeSwitch"></label>
+    </div>
+
+    <div class="image-section">
+        <h1 class="gradient-text">Welcome to Khana Khajana</h1>
+        <h2>Order the food you Want...</h2>
+    </div>
+
+    <div class="fruit-container" id="food-list"></div>
+    <div class="cart-container" id="cart-container">
+        <h2>Your Cart</h2>
+        <div id="cart-items"></div>
+        <button id="checkout-button">Checkout</button>
+    </div>
+
+    <div class="receipt-container" id="receipt-container" style="display: none;">
+        <h2>Your Receipts</h2>
+        <div id="receipts"></div>
+    </div>
+
+    <footer>
+        <p>&copy; 2024 Food Ordering Platform. All Rights Reserved.</p>
+    </footer>
+
+    <script>
+        
+        const themeSwitch = document.getElementById('themeSwitch');
+        const body = document.body;
+
+        // Load the user's saved theme preference on page load
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+            body.classList.add('dark-theme');
+            themeSwitch.checked = true; // Set the switch to the correct position
+        }
+
+        // Event listener for the theme switch
+        themeSwitch.addEventListener('change', () => {
+            if (themeSwitch.checked) {
+                body.classList.add('dark-theme');
+                localStorage.setItem('theme', 'dark'); // Save user preference
+            } else {
+                body.classList.remove('dark-theme');
+                localStorage.setItem('theme', 'light'); // Save user preference
+            }
+        });
+
+        async function handlePayment(userId, items, total) {
+            // Assume payment processing happens here
+            const paymentSuccessful = true; // This would be the result of your payment processing logic
+        
+            if (paymentSuccessful) {
+                await placeOrder(userId, items, total);
+            } else {
+                alert('Payment failed. Please try again.');
+            }
+        }
+
+        async function placeOrder(userId, items, total) {
+            const response = await fetch('/orders', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ userId, items, total }),
+            });
+        
+            if (response.ok) {
+                const receipt = await response.json();
+                console.log('Receipt saved:', receipt);
+                alert('Order placed successfully! Receipt ID: ' + receipt._id);
+            } else {
+                const errorData = await response.json();
+                console.error('Error placing order:', errorData.message);
+                alert('Failed to save receipt. Check console for details.');
+            }
+        }
+
+        // Example function to handle payment
+        async function handlePayment() {
+            // Assume this function processes the payment
+            const paymentSuccessful = await processPayment();
+
+            if (paymentSuccessful) {
+                const userId = 'user-id'; // Retrieve this from your auth context
+                const items = [/* items ordered */]; // Fill with the ordered items
+                const total = 100; // Total amount
+
+                await placeOrder(userId, items, total); // Save receipt after successful payment
+            } else {
+                alert('Payment failed. Please try again.');
+            }
+        }
+
+
+        $(document).ready(function () {
+            let cart = [];
+            // Function to render food items
+            function renderFoodItems(foods) {
+                $('#food-list').empty();
+                foods.forEach(food => {
+                    $('#food-list').append(`
+                        <div class="fruit">
+                            <img src="${food.image}" alt="${food.name}">
+                            <h3>${food.name}</h3>
+                            <h4>INR ${food.price.toFixed(2)}</h4>
+                            <input type="number" id="${food.name}-qty" min="0" value="0">
+                            <button class="add-to-cart" data-name="${food.name}" data-price="${food.price}">Add to Cart</button>
+                        </div>
+                    `);
+                });
+            }
+
+            // Fetch food items from the server
+            function fetchFoodItems() {
+                $.ajax({
+                    url: '/food-items',
+                    method: 'GET',
+                    success: function (foods) {
+                        renderFoodItems(foods);
+                    },
+                    error: function (err) {
+                        console.error('Error fetching food items:', err);
+                    }
+                });
+            }
+
+            // Initial fetch of food items
+            fetchFoodItems();
+
+            // Handle filter selection
+            $('.filter').on('click', function (e) {
+                e.preventDefault();
+                const selectedFilter = $(this).data('filter');
+                $.ajax({
+                    url: '/food-items',
+                    method: 'GET',
+                    success: function (foods) {
+                        const filteredFoods = selectedFilter === 'All' ? foods : foods.filter(food => food.category === selectedFilter);
+                        renderFoodItems(filteredFoods);
+                    },
+                    error: function (err) {
+                        console.error('Error fetching food items:', err);
+                    }
+                });
+
+                $('#cart-container').hide();
+                $('#food-list').show();
+            });
+
+            // Add to cart functionality
+            $(document).on('click', '.add-to-cart', function () {
+                const foodName = $(this).data('name');
+                const foodPrice = $(this).data('price');
+                const qty = $(`#${foodName}-qty`).val();
+
+                if (qty > 0) {
+                    const item = { name: foodName, price: foodPrice, quantity: parseInt(qty) };
+                    cart.push(item);
+                    alert(`${foodName} added to cart!`);
+                } else {
+                    alert('Please select a quantity greater than 0.');
+                }
+            });
+
+            // Show cart items
+            $('#cart-link').on('click', function (e) {
+                e.preventDefault();
+                $('#food-list').hide();
+                $('#cart-container').show();
+                renderCartItems();
+            });
+
+            // Render cart items
+            function renderCartItems() {
+                $('#cart-items').empty();
+                cart.forEach(item => {
+                    $('#cart-items').append(`
+                        <div class="cart-item">
+                            <span>${item.name} (x${item.quantity})</span>
+                            <span>INR ${item.price * item.quantity}</span>
+                        </div>
+                    `);
+                });
+            }
+
+            // Handle search input on pressing Enter
+            $('#search').on('keypress', function (e) {
+                if (e.which === 13) { // Check if Enter key is pressed
+                    e.preventDefault(); // Prevent default form submission
+                    const searchTerm = $(this).val().toLowerCase();
+                    console.log('Search term:', searchTerm); // Debug: Check the input value
+
+                    // Filter food items based on search term
+                    const filteredFoods = foodItems.filter(food => 
+                        food.name.toLowerCase().includes(searchTerm) || 
+                        food.category.toLowerCase().includes(searchTerm)
+                    );
+                    
+                    // Debug: Log the filtered results to verify filtering
+                    console.log('Filtered items:', filteredFoods);
+                    
+                    renderFoodItems(filteredFoods);
+                }
+            });
+
+
+            // Checkout button functionality
+            $('#checkout-button').on('click', function () {
+                alert('Proceeding to checkout...');
+                // Implement checkout logic here
+                let totalPrice = 0;
+                
+                    cart.forEach(item => {
+                        totalPrice += item.price * item.quantity;
+                    });
+
+                    let paymentOptions = `
+                        <div class="payment-options">
+                            <h3>Total: INR ${totalPrice.toFixed(2)}</h3>
+                            <button id="pay-credit-card">Pay with Credit Card</button>
+                            <button id="pay-paypal">Pay with PayPal</button>
+                        </div>
+                    `;
+
+                    $('#cart-container').append(paymentOptions);
+
+                    $('html, body').animate({
+                        scrollTop: $('#cart-container').offset().top
+                    }, 500);
+            });
+            $(document).on('click', '#pay-credit-card', function () {
+                alert('Payment with Credit Card successful!');
+
+                showReceipt();
+            });
+
+            $(document).on('click', '#pay-paypal', function () {
+                alert('Payment with PayPal successful!');
+
+                showReceipt();
+            });
+
+            function showReceipt() {
+                let receipt = '<h3>Payment Receipt</h3><ul>';
+                const items = cart.map(item => ({
+                    name: item.name,
+                    quantity: item.quantity,
+                    price: item.price,
+                }));
+            
+                items.forEach(item => {
+                    receipt += `<li>${item.name} (x${item.quantity}): INR ${item.price * item.quantity}</li>`;
+                });
+                const total = cart.reduce((total, item) => total + item.price * item.quantity, 0).toFixed(2);
+                receipt += `</ul><h4>Total Paid: INR ${total}</h4>`;
+            
+                $('#cart-container').html(receipt); 
+                $.ajax({
+                    url: '/save-receipt',
+                    method: 'POST',
+                    contentType: 'application/json',
+                    data: JSON.stringify({ items, total }),
+                    success: function(response) {
+                        console.log(response.message);
+                    },
+                    error: function(err) {
+                        console.error('Error saving receipt:', err);
+                    }
+                });
+            }
+            // Existing functions...
+            
+            $('#hamburger-menu').on('click', '#history', function () {
+                $('#cart-container').hide(); // Hide the cart if it's visible
+                $('#receipt-container').show(); // Show the receipt section
+                fetchReceipts(); // Call function to fetch receipts
+            });
+            // Fetch past receipts from the server
+            fetchReceipts();
+
+            function fetchReceipts() {
+                $.ajax({
+                    url: '/user/receipts', // No need to pass username, it's handled server-side
+                    method: 'GET',
+                    success: function (receipts) {
+                        $('#receipts').empty();
+                        receipts.forEach(receipt => {
+                            $('#receipts').append(`
+                                <div class="receipt">
+                                    <h4>Receipt ID: ${receipt._id}</h4>
+                                    <ul>
+                                        ${receipt.items.map(item => `<li>${item.name} (x${item.quantity}): INR ${item.price * item.quantity}</li>`).join('')}
+                                    </ul>
+                                    <h4>Total Paid: INR ${receipt.total}</h4>
+                                    <p>Date: ${new Date(receipt.createdAt).toLocaleString()}</p>
+                                </div>
+                            `);
+                        });
+                    },
+                    error: function (err) {
+                        console.error('Error fetching receipts:', err);
+                    }
+                });
+            }
+            
+
+           // Hamburger menu toggle
+            // Hamburger menu toggle to behave like a dropdown
+            $('#hamburger').on('click', function () {
+                $('.hamburger-menu').slideToggle(); // Toggle with slide effect
+            });
+
+
+        });
+    </script>
+
+    <style>
+        /* Hamburger Menu Styles */
+        .hamburger {
+            cursor: pointer;
+            font-size: 24px;
+            margin-right: 20px;
+        }
+
+        .hamburger-menu {
+            display: none; /* Hidden by default */
+            position: absolute; /* Position relative to the header */
+            top: 50px; /* Align right under the header */
+            left: 0;
+            background: white;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+            z-index: 1000;
+            width: 200px; /* Set width similar to dropdown */
+        }
+
+        .hamburger-menu ul {
+            list-style-type: none;
+            padding: 10px;
+            margin: 0;
+        }
+
+        .hamburger-menu li {
+            padding: 10px;
+            background-color: #f0f0f0;
+            border-bottom: 1px solid #ddd;
+            transition: background-color 0.3s;
+        }
+
+        .hamburger-menu li a {
+            text-decoration: none;
+            color: black;
+            display: block;
+        }
+
+        .hamburger-menu li:hover {
+            background-color: #ddd; /* Change background on hover */
+        }
+
+    </style>
+</body>
+</html>

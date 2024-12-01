@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Registration | Food Ordering Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="container">
+        <h2>User Registration</h2>
+        <form id="userRegisterForm">
+            <div class="input-group">
+                <label for="name">Name</label>
+                <input type="text" id="name" placeholder="Enter your name" required>
+            </div>
+            <div class="input-group">
+                <label for="email">Email</label>
+                <input type="email" id="email" placeholder="Enter your email" required>
+            </div>
+            <div class="input-group">
+                <label for="password">Password</label>
+                <input type="password" id="password" placeholder="Enter your password" required>
+            </div>
+            <div class="input-group">
+                <label for="confirmPassword">Confirm Password</label>
+                <input type="password" id="confirmPassword" placeholder="Confirm your password" required>
+            </div>
+            <button type="submit" class="login-btn">Register</button>
+            <p class="login-text">Already have an account? <a href="user-login.html">Login here</a></p>
+        </form>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            $('#userRegisterForm').on('submit', function (event) {
+                event.preventDefault();
+
+                const name = $('#name').val();
+                const email = $('#email').val();
+                const password = $('#password').val();
+                const confirmPassword = $('#confirmPassword').val();
+                let isValid = true;
+
+                // Basic validation
+                if (name === "" || email === "" || password === "" || confirmPassword === "") {
+                    alert("Please fill in all fields");
+                    isValid = false;
+                }
+
+                // Email validation
+                const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+                if (!email.match(emailPattern)) {
+                    alert("Please enter a valid email address");
+                    isValid = false;
+                }
+
+                // Password length validation
+                if (password.length < 6) {
+                    alert("Password must be at least 6 characters long");
+                    isValid = false;
+                }
+
+                // Password match validation
+                if (password !== confirmPassword) {
+                    alert("Passwords do not match");
+                    isValid = false;
+                }
+
+                // If valid, send AJAX request
+                if (isValid) {
+                    $.ajax({
+                        type: 'POST',
+                        url: '/api/user/register',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ name, email, password }),
+                        success: function (response) {
+                            if (response.success) {
+                                alert("Registration successful!");
+                                window.location.href = "user-login.html";
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function () {
+                            alert("An error occurred while registering.");
+                        }
+                    });
+                } else {
+                    $('.container').addClass('shake');
+                    setTimeout(function () {
+                        $('.container').removeClass('shake');
+                    }, 500);
+                }
+            });
+        });
+    </script>
+
+</body>
+</html>

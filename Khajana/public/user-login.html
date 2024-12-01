@@ -1,0 +1,103 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login | Food Ordering Platform</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <div class="moving-icon"></div>
+    <div class="particles">
+        <div class="particle" style="left: 10%; animation-delay: 0s;"></div>
+        <div class="particle" style="left: 20%; animation-delay: 3s;"></div>
+        <div class="particle" style="left: 30%; animation-delay: 6s;"></div>
+        <div class="particle" style="left: 50%; animation-delay: 1s;"></div>
+        <div class="particle" style="left: 70%; animation-delay: 5s;"></div>
+        <div class="particle" style="left: 80%; animation-delay: 2s;"></div>
+        <div class="particle" style="left: 90%; animation-delay: 8s;"></div>
+    </div>
+
+    <!-- Login Form -->
+    <div class="container">
+        <h2>Food Ordering Platform</h2>
+        <div class="login-form">
+            <h2>Login</h2>
+            <form id="loginForm" action="user-homepage.html" method="POST">
+                <div class="input-group">
+                    <label for="email">Email</label>
+                    <input type="email" id="email" placeholder="Enter your email" required>
+                </div>
+                <div class="input-group">
+                    <label for="password">Password</label>
+                    <input type="password" id="password" placeholder="Enter your password" required>
+                </div>
+                <button type="submit" class="login-btn">Login</button>
+                <p class="register-text">Don't have an account? <a href="user-register.html">Register here</a></p>
+                <center><a href="index.html">Go Back</a></center>
+                <p id="login-message"></p> <!-- For displaying login messages -->
+            </form>
+        </div>
+    </div>
+
+    <script>
+        $(document).ready(function () {
+            // Form validation and AJAX request on submit
+            $('#loginForm').on('submit', function (event) {
+                event.preventDefault();
+
+                const email = $('#email').val();
+                const password = $('#password').val();
+                let isValid = true;
+
+                // Check email and password fields
+                if (email === "" || password === "") {
+                    alert("Please fill in all fields");
+                    isValid = false;
+                }
+
+                // Email format validation
+                const emailPattern = /^[^ ]+@[^ ]+\.[a-z]{2,3}$/;
+                if (!email.match(emailPattern)) {
+                    alert("Please enter a valid email address");
+                    isValid = false;
+                }
+
+                // Password length validation
+                if (password.length < 6) {
+                    alert("Password must be at least 6 characters long");
+                    isValid = false;
+                }
+
+                // Apply effects based on validation
+                if (isValid) {
+                    // AJAX request to the server for authentication
+                    $.ajax({
+                        url: '/api/user/login',
+                        method: 'POST',
+                        contentType: 'application/json',
+                        data: JSON.stringify({ email, password }),
+                        success: function (response) {
+                            if (response.success) {
+                                window.location.href = 'user-home.html'; // Redirect to user home page
+                            } else {
+                                alert(response.message);
+                            }
+                        },
+                        error: function (err) {
+                            alert('Login failed: ' + err.responseJSON.message);
+                        }
+                    });
+                } else {
+                    // Shake animation if validation fails
+                    $('.container').addClass('shake');
+                    setTimeout(function () {
+                        $('.container').removeClass('shake');
+                    }, 500);
+                }
+            });
+        });
+    </script>
+</body>
+</html>

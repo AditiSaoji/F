@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>User Profile</title>
+    <link rel="stylesheet" href="profile.css"> <!-- Add your CSS file here -->
+</head>
+<body>
+    <div class="container">
+        <h2>User Profile</h2>
+        <p><strong>Username:</strong> <span id="name"></span></p>
+        <p><strong>Email:</strong> <span id="email"></span></p>
+        <button onclick="goBack()">Go Back</button>
+    </div>
+
+    <script>
+        async function fetchUserProfile() {
+            try {
+                const response = await fetch('/profile'); // Adjust the endpoint to fetch user data
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    alert(`Error: ${errorData.message}`);
+                    return;
+                }
+                
+                const user = await response.json();
+                document.getElementById('name').textContent = user.name;
+                document.getElementById('email').textContent = user.email;
+                
+            } catch (error) {
+                console.error('Fetch error:', error);
+                alert('Failed to fetch profile. Check console for details.');
+            }
+        }
+
+        function goBack() {
+            window.history.back(); // Go back to the previous page
+        }
+
+        // Fetch user profile when the page loads
+        fetchUserProfile();
+    </script>
+</body>
+</html>
